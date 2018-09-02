@@ -1,0 +1,11 @@
+{
+    "require": {
+        "knplabs/github-api": "^2.9",
+        "php-http/guzzle6-adapter": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "yiisoft\\": "src\\"
+        }
+    }
+}
