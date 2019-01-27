@@ -1,7 +1,7 @@
 <?php
 return [
     'yii-core',
-    //'yii-console',
+    'yii-console',
     'yii-web',
     'yii-rest',
 
@@ -10,6 +10,9 @@ return [
     'yii-base-api',
     'yii-base-cli',
 
+    'yii-dataview',
+    'yii-queue',
+    'yii-dev',
     'yii-bootstrap3',
     'yii-bootstrap4',
     'yii-masked-input',
