@@ -4,10 +4,12 @@ return [
         [
             'name' => 'expired',
             'color' => 'cccccc',
+            'description' => 'Information requested was not provided in two weeks.',
         ],
         [
             'name' => 'good first issue',
             'color' => '0e8a16',
+            'description' => 'Simple enough issue to start with.',
         ],
         [
             'name' => 'help wanted',
@@ -16,6 +18,7 @@ return [
         [
             'name' => 'missing formatting',
             'color' => 'd4c5f9',
+            'description' => 'Formatting is missing so it is hard to read issue.',
         ],
         [
             'name' => 'question',
@@ -26,16 +29,19 @@ return [
         [
             'name' => 'pr:missing usecase',
             'color' => 'fbca04',
+            'description' => 'It is not clear what is the use case for the pull request.',
         ],
 
         [
             'name' => 'pr:request for unit tests',
             'color' => 'fbca04',
+            'description' => 'Unit tests are needed.',
         ],
 
         [
             'name' => 'pr:too many objectives',
             'color' => 'fbca04',
+            'description' => 'It is impossible to review pull request because it does too many things at once.',
         ],
     ],
     'status' => [
@@ -43,20 +49,21 @@ return [
             'name' => 'status:need more info',
             'color' => 'd4c5f9',
         ],
-
         [
             'name' => 'status:ready for adoption',
             'color' => '02e10c',
+            'description' => 'Feel free to implement this issue.',
         ],
-
         [
             'name' => 'status:to be verified',
             'color' => 'fbca04',
+            'description' => 'Needs to be reproduced and validated.',
         ],
 
         [
             'name' => 'status:under development',
             'color' => '0b02e1',
+            'description' => 'Someone is working on a pull request.',
         ],
 
         [
@@ -68,36 +75,51 @@ return [
             'name' => 'status:wontfix',
             'color' => 'C0BABA',
         ],
+        [
+            'name' => 'status:code review',
+            'color' => '02e10c',
+            'description' => 'The pull request needs review.',
+        ],
+        [
+            'name' => 'status:ready for merge',
+            'color' => '02e10c',
+            'description' => 'The pull request is OK to be merged.',
+        ],
     ],
     'type' => [
         [
             'name' => 'type:bug',
             'color' => 'e102d8',
+            'description' => 'Bug',
         ],
-
         [
             'name' => 'type:docs',
             'color' => '207de5',
+            'description' => 'Documentation',
         ],
 
         [
             'name' => 'type:enhancement',
             'color' => 'd7e102',
+            'description' => 'Enhancement',
         ],
 
         [
             'name' => 'type:feature',
             'color' => '02d7e1',
+            'description' => 'New feature',
         ],
 
         [
             'name' => 'type:task',
             'color' => 'DDDDDD',
+            'description' => 'Task',
         ],
 
         [
             'name' => 'type:test',
             'color' => 'd7e102',
+            'description' => 'Test',
         ],
     ],
     'dbs' => [
@@ -272,6 +294,7 @@ return [
         [
             'name' => 'severity:BC breaking',
             'color' => 'eb6420',
+            'description' => 'Breaks backwards compatibility',
         ],
 
         [
@@ -297,6 +320,7 @@ return [
         [
             'name' => 'severity:security',
             'color' => '5319e7',
+            'description' => 'Affects security',
         ],
     ],
     '_' => [
@@ -312,8 +336,6 @@ return [
             'name' => 'JS',
             'color' => '006b75',
         ],
-
-
         [
             'name' => 'core issue',
             'color' => 'ededed',

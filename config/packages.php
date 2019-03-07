@@ -1,5 +1,6 @@
 <?php
 return [
+//    'yii2',
     'yii-core',
     'yii-console',
     'yii-web',

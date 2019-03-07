@@ -8,9 +8,9 @@ use Github\Client;
 
 class RepoLabels
 {
-    private $client;
     private $username;
     private $repository;
+    private $labelsApi;
 
     /**
      * RepoLabels constructor.
@@ -21,41 +21,50 @@ class RepoLabels
         $this->client = $client;
         $this->username = $username;
         $this->repository = $repository;
+
+        $labelsApi = new Labels($client);
+        $labelsApi->setPerPage(1000);
+        $this->labelsApi = $labelsApi;
     }
 
-    public function rename(array $config)
+    public function rename(array $config): array
     {
-        $repoApi = new \Github\Api\Repo($this->client);
-        $labelsApi = $repoApi->labels();
+        $skipped = [];
+        $renamed = [];
 
         foreach ($config as $oldName => $newName) {
             try {
-                $existingLabelData = $labelsApi->show($this->username, $this->repository, $oldName);
+                $existingLabelData = $this->labelsApi->show($this->username, $this->repository, $oldName);
             } catch (\Github\Exception\RuntimeException $e) {
-                // skip non-existing labels
                 if ($e->getMessage() !== 'Not Found') {
                     throw $e;
                 }
+
+                // skip non-existing labels
+                $skipped[] = $oldName;
                 continue;
             }
 
-            $labelsApi->update($this->username, $this->repository, $oldName, [
+            $this->labelsApi->update($this->username, $this->repository, $oldName, [
                 'name' => $newName,
                 'color' => $existingLabelData['color'],
             ]);
+            $renamed[] = $oldName . ' -> ' . $newName;
         }
+
+        return [$skipped, $renamed];
     }
 
-    public function ensure($config, array $labelsGroups, $deleteUnlisted = false)
+    public function ensure($config, array $labelsGroups, $deleteUnlisted = false): array
     {
-        $repoApi = new \Github\Api\Repo($this->client);
-        $labelsApi = $repoApi->labels();
-        $labelsApi->setPerPage(1000);
-        $currentLabelsData = $labelsApi->all($this->username, $this->repository);
+        $currentLabelsData = $this->labelsApi->all($this->username, $this->repository);
 
         $currentLabels = [];
         foreach ($currentLabelsData as $currentLabelsDatum) {
-            $currentLabels[$currentLabelsDatum['name']] = $currentLabelsDatum['color'];
+            $currentLabels[$currentLabelsDatum['name']] = [
+                'color' => $currentLabelsDatum['color'],
+                'description' => $currentLabelsDatum['description'] ?? '',
+            ];
         }
 
         $labelsToEnsure = [];
@@ -64,7 +73,10 @@ class RepoLabels
                 throw new \RuntimeException("Missing $labelsGroup group in labels config.");
             }
             foreach ($config[$labelsGroup] as $labelToEnsure) {
-                $labelsToEnsure[$labelToEnsure['name']] = $labelToEnsure['color'];
+                $labelsToEnsure[$labelToEnsure['name']] = [
+                    'color' => $labelToEnsure['color'],
+                    'description' => $labelToEnsure['description'] ?? '',
+                ];
             }
         }
         
@@ -72,29 +84,72 @@ class RepoLabels
         $existingLabels = array_intersect_key($labelsToEnsure, $currentLabels);
         $labelsToDelete = array_diff_key($currentLabels, $labelsToEnsure);
 
-        // delete unlisted labels
+        $deleted = [];
         if ($deleteUnlisted) {
-            foreach ($labelsToDelete as $name => $color) {
-                $labelsApi->remove($this->username, $this->repository, $name);
-            }
+            $deleted = $this->deleteLabels($labelsToDelete);
         }
 
-        // add missing labels
-        foreach ($missingLabels as $name => $color) {
-            $labelsApi->create($this->username, $this->repository, [
+        $added = $this->addLabels($missingLabels);
+        $updated = $this->updateLabelsIfNeeded($existingLabels, $currentLabels);
+
+        return [$added, $updated, $deleted];
+    }
+
+    /**
+     * @param array $missingLabels
+     * @throws \Github\Exception\MissingArgumentException
+     */
+    private function addLabels(array $missingLabels): array
+    {
+        $added = [];
+        foreach ($missingLabels as $name => $data) {
+            $this->labelsApi->create($this->username, $this->repository, [
                 'name' => $name,
-                'color' => $color,
+                'color' => $data['color'],
+                'description' => $data['description'],
             ]);
+            $added[] = $name;
         }
+        return $added;
+    }
 
-        // update existing label colors if needed
-        foreach ($existingLabels as $name => $color) {
-            if ($currentLabels[$name] !== $color) {
-                $labelsApi->update($this->username, $this->repository, $name, [
-                    'name' => $name,
-                    'color' => $color,
-                ]);
+    /**
+     * @param array $existingLabels
+     * @param array $currentLabels
+     * @throws \Github\Exception\MissingArgumentException
+     */
+    private function updateLabelsIfNeeded(array $existingLabels, array $currentLabels): array
+    {
+        $updated = [];
+
+        foreach ($existingLabels as $name => $data) {
+            $needUpdate = $currentLabels[$name]['color'] !== $data['color'] || $currentLabels[$name]['description'] !== $data['description'];
+
+            if (!$needUpdate) {
+                continue;
             }
+
+            $this->labelsApi->update($this->username, $this->repository, $name, [
+                'name' => $name,
+                'color' => $data['color'],
+                'description' => $data['description'],
+            ]);
+
+            $updated[] = $name;
         }
+        return $updated;
+    }
+
+    /**
+     * @param array $labelsToDelete
+     */
+    private function deleteLabels(array $labelsToDelete): array
+    {
+        $deleted = [];
+        foreach ($labelsToDelete as $name => $data) {
+            $this->labelsApi->remove($this->username, $this->repository, $name);
+            $deleted[] = $name;
+        }
+        return $deleted;
     }
 }
