@@ -67,6 +67,11 @@ return [
     'yii-auth-client',
 
     'log',
+    'log-target-db',
+    'log-target-email',
+    'log-target-file',
+    'log-target-syslog',
+
     'di',
     'cache',
     'db',
@@ -84,4 +89,10 @@ return [
     'db-redis',
     'db-mongodb',
     'db-elasticsearch',
+
+    'mutex',
+    'mutex-file',
+    'mutex-db-oracle',
+    'mutex-db-mysql',
+    'mutex-db-pgsql',
 ];
