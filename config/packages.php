@@ -95,4 +95,8 @@ return [
     'mutex-db-oracle',
     'mutex-db-mysql',
     'mutex-db-pgsql',
+
+    'inflector',
+    'strings',
+    'arrays'
 ];
