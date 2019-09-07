@@ -1,23 +1,29 @@
 <?php
 require_once __DIR__ . '/vendor/autoload.php';
 
-if (empty($argv[1])) {
-    echo 'Usage: php ensure-labels.php <your_github token>';
+if (empty($argv[1]) || empty($argv[2])) {
+    echo 'Usage: php ensure-labels.php <repository> <your_github token>';
     exit(0);
 }
-$token = $argv[1];
+
+$package = $argv[1];
+$token = $argv[2];
 
 $labelsConfig = require 'config/labels.php';
 $labelsRenameConfig = require 'config/labels-rename.php';
-$packages = require 'config/packages.php';
 
 $client = new \Github\Client();
 $client->authenticate($token, null, Github\Client::AUTH_HTTP_TOKEN);
 
-foreach ($packages as $package) {
+ensureLabels($client, $package, $labelsConfig, $labelsRenameConfig);
+
+function ensureLabels(\Github\Client $client, string $package, array $labelsConfig, array $labelsRenameConfig)
+{
     echo "Processing $package.\n";
 
-    $repoLabels = new \yiisoft\RepoLabels($client, 'yiisoft', $package);
+    [$vendor, $packageName] = explode('/', $package);
+
+    $repoLabels = new \yiisoft\RepoLabels($client, $vendor, $packageName);
 
     echo '[Renaming Labels] ';
     try {
